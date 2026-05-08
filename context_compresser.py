@@ -72,7 +72,7 @@ class ContextCompresser:
 
         messages = [{"role": "user", "content": prompt}]
         try:
-            new_summary = self.llm_adapter.generate_response(messages)
+            new_summary, _ = self.llm_adapter.generate_response(messages, silent=True)
             new_summary = new_summary.strip()
         except Exception as e:
             print(f"[警告] 壓縮過程中發生錯誤: {e}。退回舊記憶。")

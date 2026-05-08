@@ -12,17 +12,30 @@ class Colors:
     GREY = '\033[90m'
     RESET = '\033[0m'
     BOLD = '\033[1m'
-
+    PINK = '\033[95m'
+    PURPLE = '\033[35m'
+    
 def print_banner():
-    """印出帶有科技感的系統啟動橫幅"""
-    print(f"{Colors.CYAN}{Colors.BOLD}")
-    print(" █▄ ▄█   ▄▀▀▄   ▀▄ ▄▀  █▀▀▀  █▀▀▄  ▀  ▄▀▀▀  █▄▀ ")
-    print(" █ ▀ █  █▄▄▄▄█   ▐▄▌   █▀▀▀  █▄▄▀  █  █     █▀▄ ")
-    print(" ▀   ▀  █    █    ▀    ▀▄▄▄  ▀  ▀▄ ▀   ▀▄▄▄ ▀  ▀")
-    print(f"                                   AI Core v1.0{Colors.RESET}")
-    print(f"{Colors.GREY}{'=' * 50}{Colors.RESET}")
+    """印出帶有科技感的系統啟動橫幅 (放大寬鬆版)"""
+    
+    # 換成更寬、更清晰的 ASCII 字體，並利用多行字串加入上下留白
+    logo = f"""{Colors.CYAN}{Colors.BOLD}
+
+    ███╗   ███╗   █████╗   ██╗   ██╗  ███████╗  ██████╗   ██╗   ██████╗  ██╗  ██╗  
+    ████╗ ████║  ██╔══██╗  ██║   ██║  ██╔════╝  ██╔══██╗  ██║  ██╔════╝  ██║ ██╔╝  
+    ██╔████╔██║  ███████║  ██║   ██║  █████╗    ██████╔╝  ██║  ██║       █████╔╝   
+    ██║╚██╔╝██║  ██╔══██║  ╚██╗ ██╔╝  ██╔══╝    ██╔══██╗  ██║  ██║       ██╔═██╗   
+    ██║ ╚═╝ ██║  ██║  ██║   ╚████╔╝   ███████╗  ██║  ██║  ██║  ╚██████╗  ██║  ██╗  
+    ╚═╝     ╚═╝  ╚═╝  ╚═╝    ╚═══╝    ╚══════╝  ╚═╝  ╚═╝  ╚═╝   ╚═════╝  ╚═╝  ╚═╝
+
+                                           AI Core v1.0{Colors.RESET}
+"""
+    sys.stdout.write(logo)
+    # 橫線稍微加長到 60 個字元，配合變寬的 Logo
+    print(f"{Colors.GREY}{'=' * 60}{Colors.RESET}")
     print(f"{Colors.YELLOW}輸入 /help 或是 /h 來查看所有指令。{Colors.RESET}")
-    print(f"{Colors.GREY}{'=' * 50}{Colors.RESET}\n")
+    print(f"{Colors.GREY}{'=' * 60}{Colors.RESET}\n")
+
 
 class MaverickSpinner:
     """
@@ -40,7 +53,7 @@ class MaverickSpinner:
         i = 0
         while self.is_running:
             frame = self.frames[i % len(self.frames)]
-            #  Hermes 規範：避免使用 \033[K 清除行，改用空白填充避免 prompt_toolkit 破圖
+            # Hermes 規範：避免使用 \033[K 清除行，改用空白填充避免 prompt_toolkit 破圖
             sys.stdout.write(f"\r{Colors.MAGENTA}{frame} Maverick {self.message}...{' ' * 10}{Colors.RESET}")
             sys.stdout.flush()
             time.sleep(0.1)

@@ -40,3 +40,15 @@ class JSONMemoryProvider(BaseMemoryProvider):
             "summary": "",
             "history": []
         }
+
+    def list_sessions(self):
+        """掃描記憶目錄，回傳所有存在的 Session 名稱"""
+        if not os.path.exists(self.storage_dir):
+            return []
+        
+        sessions = []
+        for filename in os.listdir(self.storage_dir):
+            if filename.endswith(".json"):
+                # 去掉 .json 副檔名，只保留專案名稱
+                sessions.append(filename[:-5])
+        return sessions

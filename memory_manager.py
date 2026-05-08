@@ -43,10 +43,9 @@ class MemoryManager:
     #     # return self.provider.delete(session_id)
     #     pass
 
-    # def list_all_sessions(self) -> list:
-    #     """列出所有存在的對話專案，可用於前端 UI 的歷史紀錄選單"""
-    #     # return self.provider.list_sessions()
-    #     pass
+    def list_all_sessions(self) -> list:
+        """列出所有存在的對話專案，可用於前端 UI 的歷史紀錄選單"""
+        return self.provider.list_sessions()
 
     # def export_session(self, session_id: str, format_type: str = "markdown") -> str:
     #     """將記憶匯出成人類可讀的檔案 (支援 JSON, Markdown)"""
