@@ -14,7 +14,7 @@ class CommandDef:
 COMMAND_REGISTRY = [
     CommandDef("exit", "結束 Maverick 系統", aliases=("quit", "q")),
     CommandDef("ref", "管理外部參照檔案", aliases=("r",), args_hint="[add <檔名> | ls | clear]"),
-    CommandDef("mode", "切換大腦模型 (對話/程式碼)", aliases=("m",), args_hint="[chat | code]"),
+    CommandDef("models", "查看與切換大腦模型", aliases=("model", "m"), args_hint="[ls | switch <名稱>]"),
     CommandDef("help", "顯示此說明選單", aliases=("h", "?")),
     CommandDef("new", "開啟新話題 (清除短期對話記憶)", aliases=("clear", "c")),
     CommandDef("session", "切換對話專案/Session", aliases=("s", "sess"), args_hint="[switch <名稱>]"),

@@ -20,7 +20,7 @@ class ContextCompresser:
 
         # 向精算師請請款：取得動態預算
         tail_token_budget = self.estimator.calculate_tail_budget()
-        print(f"\n⏳ [上下文壓縮機] 啟動。精算師核准尾部預算: {tail_token_budget} Tokens...")
+        print(f"\n[上下文壓縮機] 精算師核准尾部預算: {tail_token_budget} Tokens...")
 
         head_msgs = history[:keep_head_turns]
         remaining_msgs = history[keep_head_turns:]
@@ -46,7 +46,7 @@ class ContextCompresser:
         if not middle_msgs:
             return old_summary, history
 
-        print(f"✂️ 結算：尾部消耗了 {current_tail_tokens} 預算，{len(middle_msgs)} 筆歷史移交壓縮。")
+        print(f"結算：尾部消耗了 {current_tail_tokens} 預算，{len(middle_msgs)} 筆歷史移交壓縮。")
 
         middle_text = ""
         for msg in middle_msgs:

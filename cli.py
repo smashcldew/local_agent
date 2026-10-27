@@ -7,18 +7,20 @@ from context_engine import ContextEngine
 from run_agent import MaverickAgent
 from commands import resolve_command, generate_help_text
 
-# 👉 匯入你的科技感視覺引擎
 from display import Colors, print_banner
 
-# 載入你寫好的 Adapter
-from qwen_adapter import QwenAdapter
-from qwen3_coder_adapter import QwenCoderAdapter
+from adapters import adapter_registry
 
 class MaverickCLI:
     """外場經理：只負責處理終端機 I/O 與指令分發"""
     def __init__(self):
         # 預設大腦
-        self.active_adapter = QwenAdapter()
+        self.active_model_name = "llama"
+        self.active_adapter = adapter_registry.get_adapter(self.active_model_name)
+
+        if not self.active_adapter:
+            print(f"{Colors.RED}錯誤：找不到預設大腦 'llama'。請檢查 adapters/llama_adapter.py 是否已正確註冊。{Colors.RESET}")
+            sys.exit(1)
         
         # 1. 初始化底層無狀態零件
         self.memory = MemoryManager()
@@ -37,7 +39,6 @@ class MaverickCLI:
         self.agent = MaverickAgent(engine=self.engine, adapter=self.active_adapter)
 
     def run(self):
-        # 👉 呼叫超酷的橫幅 (這會取代原本那三行 ============ 的 print)
         print_banner()
         
         # 啟動時請引擎載入記憶
@@ -46,23 +47,21 @@ class MaverickCLI:
 
         while True:
             try:
-                # 👉 加上綠色區分使用者的輸入視覺層次
                 user_input = input(f"\n{Colors.PINK}[你] > {Colors.RESET}").strip()
                 if not user_input:
                     continue
-
+            
                 # --- 指令攔截器 (Command Dispatcher) ---
                 if user_input.startswith("/"):
                     canonical_cmd = resolve_command(user_input)
                     if not canonical_cmd:
-                        print(f"{Colors.YELLOW}⚠️ 未知指令。輸入 /help 查看說明。{Colors.RESET}")
+                        print(f"{Colors.YELLOW}未知指令。輸入 /help 查看說明。{Colors.RESET}")
                         continue
                         
                     self._dispatch_command(canonical_cmd, user_input)
                     continue
 
                 # --- 正式對話 (交給 Agent) ---
-                # 👉 給 Maverick 的名字加上代表性的青色 (CYAN)
                 print(f"\n{Colors.CYAN}[Maverick] > {Colors.RESET}", end="", flush=True)
                 self.agent.chat(user_input)
                 
@@ -72,7 +71,7 @@ class MaverickCLI:
 
     def _dispatch_command(self, canonical_cmd: str, raw_input: str):
         """指令分發邏輯"""
-        parts = raw_input.split()
+        parts = raw_input.split() 
 
         if canonical_cmd == "exit":
             print(f"{Colors.GREY}Maverick 關機中。下次見！{Colors.RESET}")
@@ -86,31 +85,61 @@ class MaverickCLI:
                 self.references.add_file(parts[2])
             elif len(parts) >= 2 and parts[1] == "ls":
                 refs = self.references.get_raw_data()
-                print(f"📄 目前掛載了 {len(refs)} 個檔案:", list(refs.keys()))
+                print(f"目前掛載了 {len(refs)} 個檔案:", list(refs.keys()))
             elif len(parts) >= 2 and parts[1] == "clear":
                 self.references.clear_all()
-                print("🗑️ 已清空所有掛載檔案。")
+                print("已清空所有掛載檔案。")
             else:
-                print(f"{Colors.YELLOW}⚠️ 參數錯誤。用法: /ref [add <檔名> | ls | clear]{Colors.RESET}")
+                print(f"{Colors.YELLOW}參數錯誤。用法: /ref [add <檔名> | ls | clear]{Colors.RESET}")
+        
+        elif canonical_cmd in ["model", "models"]: 
+            if len(parts) == 1 or parts[1] == "ls":
+                print(f"\n{Colors.CYAN}=== 可用的模型型錄 ==={Colors.RESET}")
+                models = adapter_registry.get_all_models()
+                for name, info in models.items():
+                    badge = "[雲端]" if info["type"] == "cloud" else "[本地]"
+                    if name == self.active_model_name:
+                        print(f"  {Colors.GREEN}➜ {Colors.YELLOW}{name:<13}{Colors.RESET} {badge} {info['description']} {Colors.GREEN}(當前){Colors.RESET}")
+                    else:
+                        print(f"    {Colors.YELLOW}{name:<13}{Colors.RESET} {badge} {info['description']}")
+                print(f"{Colors.CYAN}========================={Colors.RESET}")
+                print(f"提示：輸入 /models switch <名稱> 即可切換大腦。")
+        
+            elif len(parts) >= 3 and parts[1] == "switch":
+                target_model = parts[2].lower()
+                new_adapter = adapter_registry.get_adapter(target_model)
                 
-        elif canonical_cmd == "mode":
-            if len(parts) >= 2 and parts[1] == "code":
-                new_adapter = QwenCoderAdapter()
-                self.agent.set_adapter(new_adapter)
-                self.engine.compresser.llm_adapter = new_adapter
-                print(f"{Colors.CYAN}🧠 已切換至 Qwen Coder (程式開發模式，預算升級！){Colors.RESET}")
-                
-            elif len(parts) >= 2 and parts[1] == "chat":
-                new_adapter = QwenAdapter()
-                self.agent.set_adapter(new_adapter)
-                self.engine.compresser.llm_adapter = new_adapter
-                print(f"{Colors.CYAN}🧠 已切換至 Qwen Chat (日常對話模式){Colors.RESET}")
+                if new_adapter:
+                    print(f"{Colors.GREY}正在連線並切換大腦至 {target_model}...{Colors.RESET}")
+                    self.active_model_name = target_model
+                    self.active_adapter = new_adapter
+                    self.agent.set_adapter(new_adapter)
+                    self.engine.compresser.llm_adapter = new_adapter
+                    
+                    print(f"{Colors.GREEN}成功切換！Maverick 現在使用 {target_model} 為您服務。{Colors.RESET}")
+                else:
+                    print(f"{Colors.RED}找不到模型 '{target_model}'。請輸入 /models ls 查看可用清單。{Colors.RESET}")
             else:
-                print(f"{Colors.YELLOW}⚠️ 參數錯誤。用法: /mode [chat | code]{Colors.RESET}")
+                print(f"{Colors.YELLOW}參數錯誤。用法: /models [ls | switch <模型名稱>]{Colors.RESET}")
+                
+            # else:
+            #     target_model = parts[1].lower()
+            #     new_adapter = adapter_registry.get_adapter(target_model)
+                
+            #     if new_adapter:
+            #         print(f"{Colors.GREY}正在連線並切換大腦至 {target_model}...{Colors.RESET}")
+            #         self.active_model_name = target_model
+            #         self.active_adapter = new_adapter
+            #         self.agent.set_adapter(new_adapter)
+            #         self.engine.compresser.llm_adapter = new_adapter
+                    
+            #         print(f"{Colors.GREEN}成功切換！Maverick 現在使用 {target_model} 為您服務。{Colors.RESET}")
+            #     else:
+            #         print(f"{Colors.RED}找不到模型 '{target_model}'。請輸入 /model ls 查看可用清單。{Colors.RESET}")
 
         elif canonical_cmd == "new":
             self.engine.clear_history()
-            print(f"{Colors.MAGENTA}✨ 記憶已斬斷！Maverick 已準備好迎接全新的話題。{Colors.RESET}")
+            print(f"{Colors.MAGENTA}記憶已斬斷！Maverick 已準備好迎接全新的話題。{Colors.RESET}")
         
         elif canonical_cmd == "session":
             if len(parts) >= 3 and parts[1] == "switch":
@@ -129,15 +158,15 @@ class MaverickCLI:
                 # 4. 重新載入：呼叫記憶管理員，載入新 Session 的歷史紀錄
                 self.engine.load_context()
                 
-                print(f"\n{Colors.CYAN}🔄 已成功切換至專案空間: [{new_session_id}]{Colors.RESET}")
+                print(f"\n{Colors.CYAN}已成功切換至專案空間: [{new_session_id}]{Colors.RESET}")
                 print(f"{Colors.GREY}[系統] 載入該專案歷史對話: {len(self.engine.runtime_history)} 筆。{Colors.RESET}")
             
             elif len(parts) >= 2 and parts[1] in ["ls", "list"]:
                 sessions = self.memory.list_all_sessions()
                 if not sessions:
-                    print(f"{Colors.YELLOW}📂 目前沒有任何存檔的專案。{Colors.RESET}")
+                    print(f"{Colors.YELLOW}目前沒有任何存檔的專案。{Colors.RESET}")
                 else:
-                    print(f"\n{Colors.CYAN}📂 目前存在的專案空間 (Sessions):{Colors.RESET}")
+                    print(f"\n{Colors.CYAN}目前存在的專案空間 (Sessions):{Colors.RESET}")
                     for s in sessions:
                         # 標示出哪一個是當前正在使用的
                         if s == self.engine.session_id:
@@ -147,7 +176,7 @@ class MaverickCLI:
                     print() # 換行美化
 
             else:
-                print(f"{Colors.YELLOW}⚠️ 參數錯誤。用法: /session switch <專案名稱>{Colors.RESET}")
+                print(f"{Colors.YELLOW}參數錯誤。用法: /session switch <專案名稱>{Colors.RESET}")
 
 if __name__ == "__main__":
     cli = MaverickCLI()

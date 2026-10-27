@@ -1,5 +1,5 @@
-# memory_manager.py
-from memory_provider import JSONMemoryProvider, BaseMemoryProvider
+# memory/manager.py
+from .provider import JSONMemoryProvider, BaseMemoryProvider
 
 # (用不到先註解) 企業級所需的擴充套件
 # from typing import List, Dict, Optional
@@ -43,7 +43,7 @@ class MemoryManager:
     #     # return self.provider.delete(session_id)
     #     pass
 
-    def list_all_sessions(self) -> list:
+    def list_sessions(self) -> list:
         """列出所有存在的對話專案，可用於前端 UI 的歷史紀錄選單"""
         return self.provider.list_sessions()
 

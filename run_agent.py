@@ -6,6 +6,7 @@ from display import Colors
 from tools.registry import registry  # 🌟 匯入中央註冊表
 import tools.files_browser
 import tools.file_editor
+import tools.web_search
 
 class MaverickAgent:
     """

@@ -1,0 +1,40 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# --- 虛擬環境 ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- 打包 / 建置 ---
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# --- 測試 / 快取 ---
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Maverick 執行期資料 ---
+# 記憶 / session 儲存(JSONMemoryProvider 寫出的檔案),請依實際路徑調整
+.maverick/
+*.session.json
+
+# --- 環境變數 / 密鑰 ---
+.env
+.env.*
+
+# --- 編輯器 / 作業系統 ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

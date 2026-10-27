@@ -14,6 +14,7 @@ class Colors:
     BOLD = '\033[1m'
     PINK = '\033[95m'
     PURPLE = '\033[35m'
+    RED = '\033[91m'
     
 def print_banner():
     """印出帶有科技感的系統啟動橫幅 (放大寬鬆版)"""

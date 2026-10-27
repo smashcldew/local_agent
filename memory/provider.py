@@ -1,4 +1,4 @@
-# memory_provider.py
+# memory/provider.py
 import json
 import os
 from abc import ABC, abstractmethod

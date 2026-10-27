@@ -1,4 +1,4 @@
-# context_engine.py
+# context/engine.py
 
 class ContextEngine:
     """
@@ -6,10 +6,10 @@ class ContextEngine:
     掌管「運行時 (Runtime)」的記憶體狀態。
     負責向底層無狀態的 MemoryManager 讀寫資料，並統整所有零件以產出最終 Prompt。
     """
-    def __init__(self, session_id: str, memory_manager, compresser, references):
+    def __init__(self, session_id: str, memory_manager, compressor, references):
         self.session_id = session_id
         self.memory_manager = memory_manager
-        self.compresser = compresser
+        self.compressor = compressor
         self.references = references
         
         # 引擎負責自己保管當前對話的狀態
@@ -63,7 +63,7 @@ class ContextEngine:
 
     def compile_context(self) -> list:
         # 1. 強制通過防護網：上下文壓縮機
-        new_summary, pruned_history = self.compresser.compress(
+        new_summary, pruned_history = self.compressor.compress(
             old_summary=self.runtime_summary, 
             history=self.runtime_history,
             keep_head_turns=2
