@@ -1,4 +1,5 @@
 # context/engine.py
+from .curator import MemoryCurator
 
 class ContextEngine:
     """
@@ -6,12 +7,14 @@ class ContextEngine:
     掌管「運行時 (Runtime)」的記憶體狀態。
     負責向底層無狀態的 MemoryManager 讀寫資料，並統整所有零件以產出最終 Prompt。
     """
-    def __init__(self, session_id: str, memory_manager, compressor, references):
+    def __init__(self, session_id: str, memory_manager, compressor, references, curator=None):
         self.session_id = session_id
         self.memory_manager = memory_manager
         self.compressor = compressor
         self.references = references
-        
+        # 記憶策展器（把對話重點萃取進長期摘要）；未提供則自建一個
+        self.curator = curator or MemoryCurator()
+
         # 引擎負責自己保管當前對話的狀態
         self.runtime_summary = ""
         self.runtime_history = []
@@ -89,3 +92,17 @@ class ContextEngine:
         """
         self.runtime_history = []
         self.save_context() # 同步更新到硬碟，避免下次載入又跑出來
+
+    def curate_memory(self) -> str:
+        """
+        主動策展:把當前對話的重點萃取進長期背景摘要並存檔。
+        使用目前壓縮機所掛載的 adapter(會隨 /models switch 更新),無 adapter 時為 no-op。
+        """
+        if not self.runtime_history:
+            return self.runtime_summary
+        adapter = getattr(self.compressor, "llm_adapter", None)
+        new_summary = self.curator.curate(self.runtime_summary, self.runtime_history, llm_adapter=adapter)
+        if new_summary and new_summary != self.runtime_summary:
+            self.runtime_summary = new_summary
+            self.save_context()
+        return self.runtime_summary

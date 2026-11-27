@@ -1,5 +1,5 @@
 # memory/manager.py
-from .provider import JSONMemoryProvider, BaseMemoryProvider
+from .provider import SQLiteMemoryProvider, JSONMemoryProvider, BaseMemoryProvider
 
 # (用不到先註解) 企業級所需的擴充套件
 # from typing import List, Dict, Optional
@@ -13,8 +13,9 @@ class MemoryManager:
     """
     def __init__(self, provider: BaseMemoryProvider = None):
         # 依賴注入 (Dependency Injection)：
-        # 預設使用 JSON 提供者，未來如果想換資料庫，只要在這裡改掉就好。
-        self.provider = provider or JSONMemoryProvider()
+        # 預設使用 SQLite 後端（支援 FTS5 全文搜尋）。想換後端只要在這裡注入
+        # 不同 provider，例如 JSONMemoryProvider()。
+        self.provider = provider or SQLiteMemoryProvider()
         
         # (用不到先註解) 日誌追蹤系統
         # self.logger = logging.getLogger(__name__)
@@ -46,6 +47,10 @@ class MemoryManager:
     def list_sessions(self) -> list:
         """列出所有存在的對話專案，可用於前端 UI 的歷史紀錄選單"""
         return self.provider.list_sessions()
+
+    def search_sessions(self, query: str, limit: int = 20) -> list:
+        """跨 session 全文搜尋，回傳命中的 [{session_id, role, content}]。"""
+        return self.provider.search(query, limit=limit)
 
     # def export_session(self, session_id: str, format_type: str = "markdown") -> str:
     #     """將記憶匯出成人類可讀的檔案 (支援 JSON, Markdown)"""

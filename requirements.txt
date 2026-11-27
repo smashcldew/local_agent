@@ -1,0 +1,7 @@
+# Maverick 核心依賴(純本地運作所需)
+requests
+duckduckgo_search
+
+# 付費雲端模型(OpenAI 相容 adapter)只需上面的 requests,無額外套件。
+# 啟用方式:設定環境變數 MAVERICK_ENABLE_CLOUD=1 並提供 OPENAI_API_KEY。
+# 未啟用時,adapters/cloud/ 完全不會被載入,核心維持純本地。

@@ -18,6 +18,9 @@ COMMAND_REGISTRY = [
     CommandDef("help", "顯示此說明選單", aliases=("h", "?")),
     CommandDef("new", "開啟新話題 (清除短期對話記憶)", aliases=("clear", "c")),
     CommandDef("session", "切換對話專案/Session", aliases=("s", "sess"), args_hint="[switch <名稱>]"),
+    CommandDef("search", "全文搜尋過去所有對話", aliases=("find", "grep"), args_hint="<關鍵字>"),
+    CommandDef("tools", "查看與切換工具群組 (toolset)", aliases=("t",), args_hint="[ls | use <群組名>]"),
+    CommandDef("remember", "把當前對話重點策展進長期記憶", aliases=("rem",)),
 ]
 
 def resolve_command(cmd_str: str) -> Optional[str]:

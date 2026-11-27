@@ -7,16 +7,19 @@ from tools.registry import registry  # 🌟 匯入中央註冊表
 import tools.files_browser
 import tools.file_editor
 import tools.web_search
+import tools.skills_tool
 
 class MaverickAgent:
     """
     [代理人核心迴圈]
     具備動態思考狀態與「工具自動執行迴圈 (Agent Loop)」。
     """
-    def __init__(self, engine, adapter):
+    def __init__(self, engine, adapter, toolset=None):
         self.engine = engine
         self.adapter = adapter
         self.max_iterations = 5  # 避免大腦陷入無限迴圈
+        # 目前啟用的工具群組（None = 全部已註冊工具，見 tools/toolsets.py）
+        self.toolset = toolset
 
     def set_adapter(self, new_adapter):
         self.adapter = new_adapter
@@ -44,8 +47,8 @@ class MaverickAgent:
             sys.stdout.write(f"\r\033[K{Colors.PURPLE}[Maverick] > {Colors.RESET}")
             sys.stdout.flush()
             
-            # 🌟 1. 從註冊表獲取可用工具的 JSON Schema
-            tools_schema = registry.get_schemas()
+            # 🌟 1. 從註冊表獲取可用工具的 JSON Schema（依目前工具群組過濾）
+            tools_schema = registry.get_schemas(toolset=self.toolset)
             
             # 🌟 2. 呼叫 Adapter (這次真的把 tools 傳過去了！)
             response_text, tool_calls = self.adapter.generate_response(safe_context, tools=tools_schema)
